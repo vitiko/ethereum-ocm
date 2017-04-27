@@ -4,8 +4,7 @@ import ConstructorMethod from './method/ConstructorMethod';
 
 export default  class ContractStructure {
 
-
-  constructor({ truffleContract, sourceStructure, data, sourcePath, abi, abiHints }) {
+  constructor({ truffleContract, sourceStructure, data, sourcePath, abi, abiHints, from } = {}) {
 
     if (truffleContract) this._abi = truffleContract.abi;
     else this._abi = abi;
@@ -22,9 +21,10 @@ export default  class ContractStructure {
     //... later
 
 
-    else
-      throw new
-        Error('Data not contain structure of solidity contract, therefore sourceStructure or sourcePath must provided to constructor');
+
+    // else
+    //   throw new
+    //     Error('Data not contain structure of solidity contract, therefore sourceStructure or sourcePath must provided to constructor');
 
 
     this._methods = {};
@@ -33,7 +33,7 @@ export default  class ContractStructure {
 
   export() {
 
-    return this._sourceStructure
+    return this._sourceStructure;
   }
 
 

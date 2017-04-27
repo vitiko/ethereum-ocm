@@ -8,17 +8,20 @@ import MethodProxy from './method/MethodProxy';
 
 export default class Contract {
 
-  constructor({ truffleContract, data, dataPath, sourcePath, sourceStructure, provider, abi, abiHints }) {
+  constructor({ truffleContract, data, address, dataPath, sourcePath, sourceStructure, provider, network_id, abi, abiHints, defaults }) {
     //decorate existing contract with address
     if (truffleContract) {
       this.contract = truffleContract;
     }
     else {
       //if we not have contract object we need data (abi, unlinked_binary etc for create it)
-      if (!data && dataPath) data = require(dataPath);
-      if (!data && abi) data.abi = abi;
+      if (!data) data = dataPath ? require(dataPath) : {};
 
-      if (!data) throw new Errror('data{ abi, unlinked binary .. etc} or dataPath must be provided');
+      if (abi) data.abi = abi;
+      if (address) data.address = address;
+      if (network_id) data.network_id = network_id;
+
+      if (!data.abi) throw new Errror('data{ abi, unlinked binary .. etc} or dataPath must be provided');
 
       //data.sourceStructure can already be in data or not
       this.contract = truffleContract = createTruffleContract(data);
@@ -36,7 +39,9 @@ export default class Contract {
     });
 
     if (provider) this.contract.setProvider(provider);
+    if (defaults) this.contract.defaults(defaults);
   }
+
 
   hasMethod(methodName) {
     return typeof(this[methodName]) == 'function' && this[methodName].name == 'methodProxy';
@@ -44,8 +49,11 @@ export default class Contract {
 
 
   createFromTruffleContract(truffleContract) {
+
+
+    
     //todo: export can be not sourceStructure !! (derived fro abi and abiHints )
-    return new Contract({ truffleContract: truffleContract, sourceStructure: this.structure.export() });
+    return new this.constructor ({ truffleContract: truffleContract, sourceStructure: this.structure.export() });
   }
 
 

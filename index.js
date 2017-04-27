@@ -1,19 +1,13 @@
 require("babel-core/register");
 require("babel-polyfill");
 
-const ContractManager = require('./lib/ContractManager');
+const Contract = require('./lib/Contract').default;
+const ContractManager = require('./lib/ContractManager').default;
 
 module.exports = {
 
-
-    create: function (options) {
-
-        return new ContractManager(options);
-
-    },
-
-
-    ContractManager
+  ContractManager,
+  Contract
 
 }
 
