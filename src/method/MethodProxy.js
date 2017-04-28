@@ -7,6 +7,10 @@ export default class MethodProxy {
     this._structure = structure;
   }
 
+  setContract (truffleContract) {
+    this._truffleContract = truffleContract;
+  }
+
   /**
    * Execute method of truffle contract
    * @param methodName

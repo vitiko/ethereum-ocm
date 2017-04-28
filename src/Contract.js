@@ -8,8 +8,15 @@ import MethodProxy from './method/MethodProxy';
 
 export default class Contract {
 
-  constructor({ truffleContract, data, address, dataPath, sourcePath, sourceStructure, provider, network_id, abi, abiHints, defaults }) {
+  constructor(constructorArgs = {} ) {
     //decorate existing contract with address
+
+    this.constructorArgs = constructorArgs;
+
+    let { truffleContract, data, address, dataPath, sourcePath, sourceStructure, provider, network_id, abi, abiHints, defaults } = constructorArgs;
+
+
+
     if (truffleContract) {
       this.contract = truffleContract;
     }
@@ -32,11 +39,10 @@ export default class Contract {
     this._propertyMapper = new PropertyMapper(this, this.structure);
 
 
-    this.contract.abi.forEach(methodABI => {
-      this[methodABI.name] = function methodProxy(...args) {
-        return this._methodProxy.execute(methodABI.name, args);
-      }
-    });
+    for (let methodABI of this.contract.abi) {
+      //console.log (methodABI.name);
+      this[methodABI.name] = (...args) =>  this._methodProxy.execute(methodABI.name, args)
+    }
 
     if (provider) this.contract.setProvider(provider);
     if (defaults) this.contract.defaults(defaults);
@@ -48,12 +54,24 @@ export default class Contract {
   }
 
 
+  setContract (newContract) {
+    this.contract = newContract;
+    this._methodProxy.setContract(newContract);
+  }
+
   createFromTruffleContract(truffleContract) {
 
 
-    
-    //todo: export can be not sourceStructure !! (derived fro abi and abiHints )
-    return new this.constructor ({ truffleContract: truffleContract, sourceStructure: this.structure.export() });
+    //console.log ('create from');
+
+    this.setContract(truffleContract);
+    return this;//truffleContract;
+
+    // console.log ('create from', this.constructorArgs );
+    //
+    // //todo: export can be not sourceStructure !! (derived fro abi and abiHints )
+    // return new this.constructor (Object.assign (
+    //   {}, this.constructorArgs, { truffleContract: truffleContract, sourceStructure: this.structure.export() }));
   }
 
 
@@ -138,7 +156,7 @@ export default class Contract {
   }
 
   deployed(...args) {
-    this.checkDefaults();
+    //this.checkDefaults();
     return this.contract.deployed(...args)
       .then(truffleContract => truffleContract ? this.createFromTruffleContract(truffleContract) : truffleContract);
   }
