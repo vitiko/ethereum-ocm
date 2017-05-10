@@ -21,7 +21,6 @@ export default  class ContractStructure {
     //... later
 
 
-
     // else
     //   throw new
     //     Error('Data not contain structure of solidity contract, therefore sourceStructure or sourcePath must provided to constructor');
@@ -35,7 +34,6 @@ export default  class ContractStructure {
 
     return this._sourceStructure;
   }
-
 
 
   //constructor params not exist in ABI
@@ -55,6 +53,10 @@ export default  class ContractStructure {
       this._sourceStructure.constantFunctions[methodName] != undefined;
   }
 
+  hasEnum(enumName) {
+    return this._sourceStructure.enums[enumName] != undefined;
+  }
+
 
   getConstantMethods() {
     return this._abi.filter(methodAbi => methodAbi.constant).map(methodAbi => this.getMethod(methodAbi.name));
@@ -72,5 +74,9 @@ export default  class ContractStructure {
     return this._methods[methodName];
   }
 
+
+  getEnum(enumName) {
+    return this.hasEnum(enumName) ? this._sourceStructure.enums[enumName] : undefined;
+  }
 
 }

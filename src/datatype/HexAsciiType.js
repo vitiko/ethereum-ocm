@@ -11,6 +11,8 @@ export default class HexAscii extends RawType {
   }
 
   static convertToRaw(value) {
-    return web3.fromAscii (value);
+    let errors = [];
+    return [errors, web3.fromAscii (value)];
   }
+
 }
