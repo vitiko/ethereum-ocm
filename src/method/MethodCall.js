@@ -4,7 +4,22 @@ export default class MethodCall {
 
   constructor(method, args) {
     this._method = method;
+
+    //call options for method
+    this._options = {};
+
+    if (Array.isArray(args) && args.length > 0) {
+      let lastItem = args[args.length - 1];
+
+      //if last item is object and contain only fields from and/or gas
+      if (typeof lastItem == 'object' && !Object.keys(lastItem).find(key => ['from', 'gas'].indexOf(key) == -1)) {
+        this._options = args.pop();
+      }
+    }
+
     this._args = args;
+
+
     this._convertedArgs = undefined;
     this._errors = undefined;
     this._rawResult = undefined;
@@ -43,14 +58,12 @@ export default class MethodCall {
    */
   async execute(truffleContract) {
 
-    if (!truffleContract[this._method.name]) throw new Error ('Truffle contract not initialized. Before call must use function new, deployed, at, fromJSON');
+    if (!truffleContract[this._method.name]) throw new Error('Truffle contract not initialized. Before call must use function new, deployed, at, fromJSON');
     this.convertArgs();
     if (this._errors.length) throw new TypeError(this._errors.join(';\n'));
 
-
     let args = this.convertExecTimeArgs(this._convertedArgs, truffleContract);
-
-    this._rawResult = await truffleContract[this._method.name](...args);
+    this._rawResult = await truffleContract[this._method.name](...args, this._options);
 
     return this.getResult();
   }
@@ -62,12 +75,11 @@ export default class MethodCall {
    * @param contract
    * @returns {*}
    */
-  convertExecTimeArgs (args, contract)
-  {
+  convertExecTimeArgs(args, contract) {
     let inputs = this._method.inputs;
     for (let inputPos in inputs) {
       let input = inputs[inputPos];
-      args[inputPos] =  DataType.execTimeReplaceConstants (input['type'], input['typeHint'], args[inputPos], contract);
+      args[inputPos] = DataType.execTimeReplaceConstants(input['type'], input['typeHint'], args[inputPos], contract);
     }
 
     return args;
