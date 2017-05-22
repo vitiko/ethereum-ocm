@@ -8,13 +8,12 @@ import MethodProxy from './method/MethodProxy';
 
 export default class Contract {
 
-  constructor(constructorArgs = {} ) {
+  constructor(constructorArgs = {}) {
     //decorate existing contract with address
 
     this.constructorArgs = constructorArgs;
 
     let { truffleContract, data, address, dataPath, sourcePath, sourceStructure, provider, network_id, abi, abiHints, defaults } = constructorArgs;
-
 
 
     if (truffleContract) {
@@ -41,7 +40,7 @@ export default class Contract {
 
     for (let methodABI of this.contract.abi) {
       //console.log (methodABI.name);
-      this[methodABI.name] = (...args) =>  this._methodProxy.execute(methodABI.name, args)
+      this[methodABI.name] = (...args) => this._methodProxy.execute(methodABI.name, args)
     }
 
     if (provider) this.contract.setProvider(provider);
@@ -54,16 +53,12 @@ export default class Contract {
   }
 
 
-  setContract (newContract) {
+  setContract(newContract) {
     this.contract = newContract;
     this._methodProxy.setContract(newContract);
   }
 
   createFromTruffleContract(truffleContract) {
-
-
-    //console.log ('create from');
-
     this.setContract(truffleContract);
     return this;//truffleContract;
 
@@ -156,21 +151,26 @@ export default class Contract {
   }
 
   deployed(...args) {
+
+    if (this._isDeployed) return Promise.resolve(this);
+
     //this.checkDefaults();
     return this.contract.deployed(...args)
-      .then(truffleContract => truffleContract ? this.createFromTruffleContract(truffleContract) : truffleContract);
+      .then(truffleContract => {
+        this._isDeployed = true;
+        return truffleContract ? this.createFromTruffleContract(truffleContract) : truffleContract
+      });
   }
 
 
   isDeployed() {
-    this.checkDefaults();
 
-    /*
-     this.contract.detectNetwork();
+    return this._isDeployed;
 
-     this.contract.deployed().then ( a => console.log (a));*/
+    //this.checkDefaults();
 
-    return this.contract.isDeployed();
+    //this.contract.detectNetwork();
+    //return this.contract.isDeployed();
   }
 
 
