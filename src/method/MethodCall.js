@@ -1,5 +1,7 @@
 import  * as DataType from '../datatype';
 
+const Web3 = require('web3');
+
 export default class MethodCall {
 
   constructor(method, args) {
@@ -12,17 +14,18 @@ export default class MethodCall {
       let lastItem = args[args.length - 1];
 
       //if last item is object and contain only fields from and/or gas
-      if (typeof lastItem == 'object' && !Object.keys(lastItem).find(key => ['from', 'gas'].indexOf(key) == -1)) {
+      if (typeof lastItem == 'object' && !Object.keys(lastItem).find(key => ['from', 'gas', 'password'].indexOf(key) == -1)) {
         this._options = args.pop();
       }
     }
 
     this._args = args;
 
-
     this._convertedArgs = undefined;
     this._errors = undefined;
     this._rawResult = undefined;
+
+    this._web3 = new Web3();
   }
 
 
@@ -57,6 +60,16 @@ export default class MethodCall {
    * @returns {*}
    */
   async execute(truffleContract) {
+
+    const {password} = this._options;
+
+    if (password) {
+      delete this._options.password;
+      this._web3.setProvider(truffleContract.constructor.web3.currentProvider);
+      truffleContract.constructor.web3.eth.sendTransaction = (args, cb) => {
+        return this._web3.personal.sendTransaction(args, password, cb);
+      }
+    }
 
     if (!truffleContract[this._method.name]) throw new Error('Truffle contract not initialized. Before call must use function new, deployed, at, fromJSON');
     this.convertArgs();
