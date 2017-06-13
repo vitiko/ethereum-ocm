@@ -1,6 +1,6 @@
 {
   "name": "ethereum-ocm",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Solidity object contract mapping (OCM)",
   "main": "index.js",
   "scripts": {
